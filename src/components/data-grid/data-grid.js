@@ -3,15 +3,14 @@ import { Button } from "../button";
 import { FormItem } from "../form-item";
 import Pagination from '../pagination' ; 
 
-
 export function DataGrid() {
  
 const [items, setItems] = useState([])
 const [loading, setLoading] = useState(false)
-
-const [orderId , setOrderId] = useState("ASC")
-const[orderTitle , setOrderTitle] = useState("ASC")
-const [orderCompleted , setOrderCompleted] = useState("ASC")
+const [order, setOrder] = useState(true); //Sorting Hooks!
+const [orderId , setOrderId] = useState("true")
+//const[orderTitle , setOrderTitle] = useState("true")
+//const [orderCompleted , setOrderCompleted] = useState("true")
 
 const [currentPage , setCurrentPage] = useState(1);
 const [itemsPerPage] = useState(50);
@@ -20,14 +19,25 @@ const [todo, setTodo] = useState(null);
 useEffect(() => {
     loadData()
   }, []);
-//Get current items
+//Current Items
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage ; 
   const currentItems = items.slice(indexOfFirstItem , indexOfLastItem);
  // const totalPagesNum = Math.ceil(items.length / itemsPerPage)
 
+//Sorting 
+const sortItems = (col) => {
+  if (order) {
+    const sorted = [...items].sort((a, b) => (a[col] > b[col] ? -1 : -1));
+    setItems(sorted);
+    setOrder(false);
+  } else {
+    const sorted = [...items].sort((a, b) => (a[col] < b[col] ? -1 : 1));
+    setItems(sorted);
+    setOrder(true);
+  }
+};
 const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
   const loadData = () => {
     setLoading(true)
     fetch("https://jsonplaceholder.typicode.com/todos")
@@ -66,9 +76,9 @@ const paginate = (pageNumber) => setCurrentPage(pageNumber);
       <table className="table">
         <thead>
           <tr>
-            <th scope="col" onClick={()=> sortingId(items.id)}>#</th>
-            <th  scope="col" onClick={()=> sortingId(items.title)}>Başlık</th>
-            <th scope="col">Durum</th>
+            <th scope="col" onClick={()=> sortItems('id')}>#</th>
+            <th  scope="col" onClick={()=> sortItems('title')}>Başlık</th>
+            <th scope="col" onClick={()=> sortItems('completed')}>Durum</th>
             <th scope="col">Aksiyonlar</th>
           </tr>
         </thead>
@@ -84,7 +94,6 @@ const paginate = (pageNumber) => setCurrentPage(pageNumber);
   }
 
 
- 
 const saveChanges = () => {
 // insert 
     if (todo && todo.id === -1) {

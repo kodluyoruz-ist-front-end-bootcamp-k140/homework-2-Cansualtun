@@ -19,4 +19,4 @@ const Pagination = ({itemsPerPage , totalItems , paginate}) => {
         </div>
       );
     };
-export default Pagination ; 
+export default Pagination ;
