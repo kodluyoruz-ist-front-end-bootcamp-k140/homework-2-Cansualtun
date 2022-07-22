@@ -1,18 +1,43 @@
-import React, { useEffect, useState } from "react"
-import { Button } from "../button"
-import { FormItem } from "../form-item"
+import React, { useEffect, useState } from "react";
+import { Button } from "../button";
+import { FormItem } from "../form-item";
+import Pagination from '../pagination' ; 
 
 export function DataGrid() {
+ 
+const [items, setItems] = useState([])
+const [loading, setLoading] = useState(false)
+const [order, setOrder] = useState(true); //Sorting Hooks!
+const [orderId , setOrderId] = useState("true")
+//const[orderTitle , setOrderTitle] = useState("true")
+//const [orderCompleted , setOrderCompleted] = useState("true")
 
-  const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(false)
+const [currentPage , setCurrentPage] = useState(1);
+const [itemsPerPage] = useState(50);
+const [todo, setTodo] = useState(null);
 
-  const [todo, setTodo] = useState(null)
-
-  useEffect(() => {
+useEffect(() => {
     loadData()
-  }, [])
+  }, []);
+//Current Items
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage ; 
+  const currentItems = items.slice(indexOfFirstItem , indexOfLastItem);
+ // const totalPagesNum = Math.ceil(items.length / itemsPerPage)
 
+//Sorting 
+const sortItems = (col) => {
+  if (order) {
+    const sorted = [...items].sort((a, b) => (a[col] > b[col] ? -1 : -1));
+    setItems(sorted);
+    setOrder(false);
+  } else {
+    const sorted = [...items].sort((a, b) => (a[col] < b[col] ? -1 : 1));
+    setItems(sorted);
+    setOrder(true);
+  }
+};
+const paginate = (pageNumber) => setCurrentPage(pageNumber);
   const loadData = () => {
     setLoading(true)
     fetch("https://jsonplaceholder.typicode.com/todos")
@@ -25,11 +50,10 @@ export function DataGrid() {
       setLoading(false)
     })
   }
-
-  const renderBody = () => {
+ const renderBody = () => {
     return (
       <React.Fragment>
-        {items.sort((a, b) => b.id - a.id).map((item, i) => {
+        {currentItems.map((item, i) => {
           return (
             <tr key={i}>
               <th scope="row" >{item.id}</th>
@@ -45,7 +69,6 @@ export function DataGrid() {
       </React.Fragment>
     )
   }
-
   const renderTable = () => {
     return (
     <>
@@ -53,9 +76,9 @@ export function DataGrid() {
       <table className="table">
         <thead>
           <tr>
-            <th scope="col">#</th>
-            <th scope="col">Başlık</th>
-            <th scope="col">Durum</th>
+            <th scope="col" onClick={()=> sortItems('id')}>#</th>
+            <th  scope="col" onClick={()=> sortItems('title')}>Başlık</th>
+            <th scope="col" onClick={()=> sortItems('completed')}>Durum</th>
             <th scope="col">Aksiyonlar</th>
           </tr>
         </thead>
@@ -63,13 +86,16 @@ export function DataGrid() {
           {renderBody()}
         </tbody>
       </table>
+      <Pagination itemsPerPage={itemsPerPage} 
+      totalItems={items.length} 
+      paginate = {paginate} />
     </>
     )
   }
 
-  const saveChanges = () => {
 
-    // insert 
+const saveChanges = () => {
+// insert 
     if (todo && todo.id === -1) {
       todo.id = Math.max(...items.map(item => item.id)) + 1;
       setItems(items => {
@@ -89,16 +115,14 @@ export function DataGrid() {
     })
     setTodo(null)
   }
-
-  const onAdd = () => {
+const onAdd = () => {
     setTodo({
       id: -1,
       title: "",
       completed: false
     })
   }
-
-  const onRemove = (id) => {
+const onRemove = (id) => {
     const status = window.confirm("Silmek istediğinize emin misiniz?")
 
     if (!status) {
@@ -143,11 +167,14 @@ export function DataGrid() {
       </>
     )
   }
-  
-  return (
+ return (
     <>
       { loading ? "Yükleniyor...." : (todo ? renderEditForm() : renderTable())}
     
     </>
   )
 }
+    
+
+
+//sort((a, b) => a.id - b.id).map
